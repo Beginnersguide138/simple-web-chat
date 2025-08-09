@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 EMBEDDING_MODEL = "mxbai-embed-large"
-GENERATION_MODEL = "gpt-oss:20b"
+GENERATION_MODEL = "tinyllama"  # Ultra lightweight model (638MB) for testing
 
 class OllamaService:
     def __init__(self, host: str = OLLAMA_HOST):
@@ -23,14 +23,37 @@ class OllamaService:
     def _ensure_models_are_available(self):
         """Checks if required models are available and pulls them if not."""
         try:
-            local_models = [m['name'] for m in self.client.list()['models']]
+            response = self.client.list()
+            # Handle both possible response formats
+            if isinstance(response, dict) and 'models' in response:
+                models_data = response['models']
+            else:
+                models_data = response
+            
+            # Extract model names, handling different possible structures
+            local_models = []
+            for m in models_data:
+                if isinstance(m, dict):
+                    # Try different possible key names
+                    model_name = m.get('name') or m.get('model') or m.get('model_name', '')
+                elif isinstance(m, str):
+                    model_name = m
+                else:
+                    continue
+                if model_name:
+                    local_models.append(model_name)
+            
             logger.info(f"Available Ollama models: {local_models}")
             required_models = [f"{EMBEDDING_MODEL}:latest", f"{GENERATION_MODEL}:latest"]
 
             for model in required_models:
-                if model not in local_models:
+                # Check if model exists (with or without :latest tag)
+                model_base = model.split(':')[0]
+                model_found = any(m.startswith(model_base) for m in local_models)
+                
+                if not model_found:
                     logger.info(f"Model '{model}' not found. Pulling it now...")
-                    self.client.pull(model.split(':')[0]) # pull by model name
+                    self.client.pull(model_base) # pull by model name
                     logger.info(f"Successfully pulled model: {model}")
 
         except Exception as e:
