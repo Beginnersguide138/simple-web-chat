@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    container_name: ollama
+    # Add healthcheck for ollama
+    healthcheck:
+      test: ["CMD", "ollama", "ps"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.9
+    container_name: milvus-etcd
+    volumes:
+      - etcd_data:/etcd
+    command:
+      - /usr/local/bin/etcd
+      - --name=etcd0
+      - --data-dir=/etcd
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://etcd:2379
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-advertise-peer-urls=http://etcd:2380
+      - --initial-cluster=etcd0=http://etcd:2380
+      - --initial-cluster-state=new
+      - --initial-cluster-token=milvus-etcd-cluster
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: milvus-minio
+    volumes:
+      - minio_data:/data
+    command: server /data
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  milvus:
+    image: milvusdb/milvus:v2.3.10
+    container_name: milvus-standalone
+    command: ["milvus", "run", "standalone"]
+    depends_on:
+      etcd:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    ports:
+      - "19530:19530" # Milvus gRPC
+      - "9091:9091"   # Milvus HTTP
+    volumes:
+      - milvus_data:/var/lib/milvus
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+    depends_on:
+      ollama:
+        condition: service_healthy
+      milvus:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+      - MILVUS_HOST=milvus
+      - MILVUS_PORT=19530
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      # Exclude node_modules from the volume mount for performance
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  ollama_data:
+  etcd_data:
+  minio_data:
+  milvus_data:

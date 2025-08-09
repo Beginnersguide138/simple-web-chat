@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+requests
+beautifulsoup4
+pymilvus
+ollama
+python-dotenv
+pydantic-settings
