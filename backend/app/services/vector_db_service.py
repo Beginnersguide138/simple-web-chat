@@ -140,6 +140,12 @@ class MilvusService:
             logger.error(f"Failed to search in Milvus with context '{context_url}': {e}", exc_info=True)
             return []
 
+# Dependency injection functions
+def get_milvus_service():
+    if not milvus_service:
+        raise RuntimeError("Milvus service is not available.")
+    return milvus_service
+
 # Singleton instance
 try:
     milvus_service = MilvusService()

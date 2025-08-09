@@ -6,3 +6,6 @@ pymilvus
 ollama
 python-dotenv
 pydantic-settings
+pytest
+pytest-asyncio
+httpx

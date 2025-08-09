@@ -83,6 +83,12 @@ class OllamaService:
             logger.error(f"Error generating chat response: {e}", exc_info=True)
             raise
 
+# Dependency injection functions
+def get_ollama_service():
+    if not ollama_service:
+        raise RuntimeError("Ollama service is not available.")
+    return ollama_service
+
 # Singleton instance
 try:
     ollama_service = OllamaService()
