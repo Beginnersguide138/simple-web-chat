@@ -21,20 +21,23 @@ export function ContextSelector({ selectedContext, onContextChange }: ContextSel
   const fetchContexts = async () => {
     try {
       const response = await fetch("/api/v1/contexts")
-      const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.detail || "Failed to fetch contexts")
+        throw new Error(`Backend unavailable (${response.status})`)
       }
-      
-      setContexts(data.contexts || [])
+
+      const contentType = response.headers.get("content-type")
+      if (!contentType?.includes("application/json")) {
+        throw new Error("Backend returned non-JSON response")
+      }
+
+      const data = await response.json()
+      setContexts(data || [])
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: `Failed to load contexts: ${errorMessage}`,
-      })
+      console.warn(`Context fetch failed: ${errorMessage}`)
+      // Don't show toast for backend connectivity issues to avoid spamming user
+      setContexts([])
     } finally {
       setIsLoading(false)
     }
