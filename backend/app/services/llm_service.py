@@ -11,8 +11,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-EMBEDDING_MODEL = "mxbai-embed-large"
-GENERATION_MODEL = "tinyllama"  # Ultra lightweight model (638MB) for testing
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "mxbai-embed-large")
+# Model selection: Use environment variable or default to gpt-oss:20b
+# Options:
+#   - "gpt-oss:20b" - Full 20B parameter model (requires 13.4GB+ memory)
+#   - "gpt-oss:latest" - Latest version of gpt-oss
+#   - "tinyllama" - Ultra lightweight model (638MB) for testing
+GENERATION_MODEL = os.getenv("GENERATION_MODEL", "gpt-oss:20b")
+
+logger.info(f"Using generation model: {GENERATION_MODEL}")
+logger.info(f"Using embedding model: {EMBEDDING_MODEL}")
 
 class OllamaService:
     def __init__(self, host: str = OLLAMA_HOST):
@@ -92,8 +100,11 @@ class OllamaService:
         """
 
         try:
+            # Ensure model name has :latest tag if not present
+            model_name = GENERATION_MODEL if ':' in GENERATION_MODEL else f"{GENERATION_MODEL}:latest"
+            
             response = self.client.chat(
-                model=GENERATION_MODEL,
+                model=model_name,
                 messages=[
                     {
                         'role': 'user',
