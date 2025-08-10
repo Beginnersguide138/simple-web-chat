@@ -118,6 +118,8 @@ Webブラウザで以下にアクセス：
 
 ## 📖 使い方
 
+![アプリケーションの全体像](docs/images/main-page.png)
+
 ### 1. Webサイトの取り込み
 
 - 「1. Ingest a Website」セクションで、処理したいWebサイトのURLを入力
@@ -125,16 +127,24 @@ Webブラウザで以下にアクセス：
 - 「Process URL」ボタンをクリック
 - 複数のURLを処理可能
 
+![URLの追加](docs/images/add-url.png)
+
 ### 2. コンテキストの選択
 
 - Webサイトを取り込むと「Select a context to chat with」ドロップダウンが表示
 - チャットしたいWebサイトを選択
+
+![コンテキストの選択](docs/images/context-selected.png)
 
 ### 3. チャット
 
 - 「2. Chat」セクションで選択したWebサイトのコンテンツについて質問
 - 質問を入力してEnterキーまたは送信ボタンをクリック
 - 選択されたWebサイトの情報のみから回答を生成
+
+![LLMが回答を生成中の様子](docs/images/llm-generating.png)
+
+![回答が完了したチャットの全画面](docs/images/full-screen-chat.png)
 
 ## 🔧 トラブルシューティング
 
@@ -195,6 +205,11 @@ ollama list
 ## 📄 ライセンス
 
 [MIT License](LICENSE)
+
+---
+
+## 🤖 生成AIによる作成
+このプロジェクトのコード、ドキュメント、構成の大部分は、生成AIの支援を受けて作成されました。
 
 ---
 

@@ -118,6 +118,8 @@ Open your web browser and navigate to:
 
 ## 📖 How to Use
 
+![Overall view of the application](docs/images/main-page.png)
+
 ### 1. Ingest a Website
 
 - In the "1. Ingest a Website" section, enter the URL of the website you want to process
@@ -125,16 +127,24 @@ Open your web browser and navigate to:
 - Click the "Process URL" button
 - Multiple URLs can be processed
 
+![Adding a URL](docs/images/add-url.png)
+
 ### 2. Select Context
 
 - After ingesting websites, a "Select a context to chat with" dropdown will appear
 - Select the website you want to chat with
+
+![Context selected](docs/images/context-selected.png)
 
 ### 3. Chat
 
 - In the "2. Chat" section, ask questions about the selected website's content
 - Type your question and press Enter or click the send button
 - The application generates answers based only on the selected website's information
+
+![LLM generating a response](docs/images/llm-generating.png)
+
+![Full screen view of the completed chat](docs/images/full-screen-chat.png)
 
 ## 🔧 Troubleshooting
 
@@ -195,6 +205,11 @@ Environment variables supported in `.env` file:
 ## 📄 License
 
 [MIT License](LICENSE)
+
+---
+
+## 🤖 Created with Generative AI
+A significant portion of the code, documentation, and configuration in this project was created with the assistance of generative AI.
 
 ---
 
