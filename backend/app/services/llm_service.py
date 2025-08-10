@@ -80,24 +80,39 @@ class OllamaService:
             logger.error(f"Error generating embedding: {e}", exc_info=True)
             raise
 
-    def generate_chat_response(self, query: str, context: str) -> str:
-        """Generates a chat response using a query and context."""
+    def generate_chat_response(self, query: str, context: str, conversation_history: List[Dict[str, str]] = None) -> str:
+        """Generates a chat response using a query, context, and conversation history."""
         if not query:
             return "Please provide a query."
 
-        prompt = f"""
-        You are a helpful assistant. Answer the following question based *only* on the provided context.
-        If the answer is not found in the context, say "I could not find an answer in the provided context."
-
+        # Build messages array with conversation history
+        messages = []
+        
+        # Add system message with context
+        system_prompt = f"""You are a helpful assistant. Answer questions based on the provided context and previous conversation history.
+        
         Context:
         ---
         {context}
         ---
-
-        Question: {query}
-
-        Answer:
-        """
+        
+        Instructions:
+        - Use the context to answer questions accurately
+        - Maintain conversation continuity by referencing previous messages when relevant
+        - If the answer is not found in the context, say "I could not find an answer in the provided context."
+        - Be conversational and remember what was discussed earlier"""
+        
+        messages.append({"role": "system", "content": system_prompt})
+        
+        # Add conversation history
+        if conversation_history:
+            for msg in conversation_history:
+                # Convert "bot" to "assistant" for Ollama compatibility
+                role = "assistant" if msg["role"] == "bot" else msg["role"]
+                messages.append({"role": role, "content": msg["content"]})
+        
+        # Add current user query
+        messages.append({"role": "user", "content": query})
 
         try:
             # Ensure model name has :latest tag if not present
@@ -105,17 +120,65 @@ class OllamaService:
             
             response = self.client.chat(
                 model=model_name,
-                messages=[
-                    {
-                        'role': 'user',
-                        'content': prompt,
-                    },
-                ]
+                messages=messages
             )
             return response['message']['content']
         except Exception as e:
             logger.error(f"Error generating chat response: {e}", exc_info=True)
             raise
+
+    def generate_chat_response_stream(self, query: str, context: str, conversation_history: List[Dict[str, str]] = None):
+        """Generates a streaming chat response using a query, context, and conversation history."""
+        if not query:
+            yield "Please provide a query."
+            return
+
+        # Build messages array with conversation history
+        messages = []
+        
+        # Add system message with context
+        system_prompt = f"""You are a helpful assistant. Answer questions based on the provided context and previous conversation history.
+        
+        Context:
+        ---
+        {context}
+        ---
+        
+        Instructions:
+        - Use the context to answer questions accurately
+        - Maintain conversation continuity by referencing previous messages when relevant
+        - If the answer is not found in the context, say "I could not find an answer in the provided context."
+        - Be conversational and remember what was discussed earlier"""
+        
+        messages.append({"role": "system", "content": system_prompt})
+        
+        # Add conversation history
+        if conversation_history:
+            for msg in conversation_history:
+                # Convert "bot" to "assistant" for Ollama compatibility
+                role = "assistant" if msg["role"] == "bot" else msg["role"]
+                messages.append({"role": role, "content": msg["content"]})
+        
+        # Add current user query
+        messages.append({"role": "user", "content": query})
+
+        try:
+            # Ensure model name has :latest tag if not present
+            model_name = GENERATION_MODEL if ':' in GENERATION_MODEL else f"{GENERATION_MODEL}:latest"
+            
+            stream = self.client.chat(
+                model=model_name,
+                messages=messages,
+                stream=True
+            )
+            
+            for chunk in stream:
+                if chunk['message']['content']:
+                    yield chunk['message']['content']
+                    
+        except Exception as e:
+            logger.error(f"Error generating streaming chat response: {e}", exc_info=True)
+            yield f"Error: {str(e)}"
 
 # Dependency injection functions
 def get_ollama_service():

@@ -32,11 +32,16 @@ export function IngestionForm({ onIngestionSuccess }: IngestionFormProps) {
         body: JSON.stringify({ url }),
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        throw new Error(data.detail || "An unknown error occurred")
+        throw new Error(`Backend unavailable (${response.status})`)
       }
+
+      const contentType = response.headers.get("content-type")
+      if (!contentType?.includes("application/json")) {
+        throw new Error("Backend returned non-JSON response")
+      }
+
+      const data = await response.json()
 
       toast({
         title: "Success!",

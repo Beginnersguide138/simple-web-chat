@@ -4,6 +4,120 @@ This project is a full-stack web application that allows you to scrape the conte
 
 The application is built with a modern stack, containerized for easy setup, and provides a simple, clean user interface.
 
+---
+
+# 日本語セットアップガイド
+
+このアプリケーションは、複数のWebサイトのコンテンツを取り込み、ベクトルデータベースに保存し、特定のサイトのコンテンツとチャットできるRAG（Retrieval-Augmented Generation）ベースのWebアプリケーションです。
+
+## 🚀 かんたんセットアップ
+
+### 前提条件
+
+- **Docker Desktop** がインストールされて実行されていること
+- **メモリ要件**（Macユーザー重要）：
+  - `gpt-oss:20b`モデル使用時: 最低16GB RAM推奨
+  - `tinyllama`モデル使用時: 4GB RAM（軽量版）
+
+### 1. リポジトリのクローン
+
+```bash
+git clone <repository-url>
+cd <repository-directory>
+```
+
+### 2. Docker Desktopのメモリ設定確認（Macユーザー）
+
+現在のDocker割り当てメモリを確認：
+```bash
+docker system info | grep "Total Memory"
+```
+
+16GB未満の場合、Docker Desktopの設定でメモリを増やすか、軽量モデルを使用してください。
+
+### 3. モデル設定（オプション）
+
+`.env`ファイルを編集してモデルを選択：
+
+```bash
+# 高品質モデル（16GB+ Docker メモリ必要）
+GENERATION_MODEL=gpt-oss:20b
+
+# 軽量モデル（4GB Docker メモリで動作、デフォルト）
+GENERATION_MODEL=tinyllama
+```
+
+### 4. アプリケーションの起動
+
+プロジェクトのルートディレクトリで以下を実行：
+
+```bash
+docker compose up --build
+```
+
+### 5. 初回起動時の注意事項
+
+初回起動時には自動的にLLMモデルがダウンロードされます：
+- `gpt-oss:20b`: 約13GBのダウンロード
+- `tinyllama`: 約638MBのダウンロード  
+- `mxbai-embed-large`: 約669MBのダウンロード
+
+進行状況は以下で確認できます：
+```bash
+docker compose logs -f backend
+```
+
+### 6. アクセス
+
+全てのサービスが起動したら、Webブラウザで以下にアクセス：
+**http://localhost:5173**
+
+## 🎯 使い方
+
+### 1. Webサイトの取り込み
+
+- 「1. Ingest a Website」セクションで、処理したいWebサイトのURLを入力
+- 例: `https://ja.wikipedia.org/wiki/人工知能`
+- 「Process URL」ボタンをクリック
+- 複数のURLを処理可能
+
+### 2. コンテキストの選択
+
+- Webサイトを取り込むと「Select a context to chat with」ドロップダウンが表示
+- チャットしたいWebサイトを選択
+
+### 3. チャット
+
+- 「2. Chat」セクションで選択したWebサイトのコンテンツについて質問
+- 質問を入力してEnterキーまたは送信ボタンをクリック
+- 選択されたWebサイトの情報のみから回答を生成
+
+## 🔧 トラブルシューティング
+
+### メモリ不足エラーが発生する場合
+
+1. **Docker メモリ割り当ての確認:**
+   ```bash
+   docker system info | grep "Total Memory"
+   ```
+
+2. **メモリが不足している場合:**
+   - **方法1**: Docker Desktopのメモリ割り当てを増加
+   - **方法2**: 軽量モデルに切り替え（`.env`で`GENERATION_MODEL=tinyllama`に変更）
+
+3. **設定変更後の再起動:**
+   ```bash
+   docker compose down
+   docker compose up -d
+   ```
+
+### モデルの性能比較
+
+- **gpt-oss:20b**: 高品質な回答、大容量メモリ必要（13.4GB+）
+- **tinyllama**: 軽量版（638MB）、テストや制限環境向け
+
+---
+
 ## Features
 
 - **Web Scraping**: Ingest content from any number of URLs.
