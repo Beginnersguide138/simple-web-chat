@@ -140,6 +140,23 @@ class MilvusService:
             logger.error(f"Failed to search in Milvus with context '{context_url}': {e}", exc_info=True)
             return []
 
+    def delete_context(self, context_url: str) -> bool:
+        """Deletes all data for a specific URL (context) from the collection."""
+        if not self.collection:
+            logger.error("Collection is not initialized. Cannot delete context.")
+            return False
+
+        try:
+            # Delete all entities with the specified URL
+            expr = f'url == "{context_url}"'
+            result = self.collection.delete(expr)
+            self.collection.flush()
+            logger.info(f"Successfully deleted context '{context_url}'. Deleted count: {result.delete_count}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to delete context '{context_url}' from Milvus: {e}", exc_info=True)
+            return False
+
 # Dependency injection functions
 def get_milvus_service():
     if not milvus_service:

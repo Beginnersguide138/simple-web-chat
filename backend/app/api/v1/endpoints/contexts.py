@@ -21,3 +21,22 @@ def get_ingested_contexts(
     except Exception as e:
         logger.error(f"Failed to retrieve contexts: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to retrieve contexts from the database.")
+
+@router.delete("/contexts/{context_url:path}")
+def delete_context(
+    context_url: str,
+    milvus: MilvusService = Depends(get_milvus_service)
+):
+    """
+    Deletes a specific context (URL) and all its associated data from the database.
+    """
+    logger.info(f"Received request to delete context: {context_url}")
+    try:
+        success = milvus.delete_context(context_url)
+        if success:
+            return {"message": f"Context '{context_url}' deleted successfully"}
+        else:
+            raise HTTPException(status_code=400, detail="Failed to delete context")
+    except Exception as e:
+        logger.error(f"Failed to delete context '{context_url}': {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to delete context from the database.")
