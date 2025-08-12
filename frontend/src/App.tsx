@@ -3,10 +3,12 @@ import { Toaster } from "@/components/ui/toaster"
 import { IngestionForm } from "@/components/IngestionForm"
 import { Chat } from "@/components/Chat"
 import { ContextSelector } from "@/components/ContextSelector"
+import { ModelSelector } from "@/components/ModelSelector"
 import { Sparkles, Bot, Globe } from "lucide-react"
 
 function App() {
   const [selectedContext, setSelectedContext] = useState<string | null>(null)
+  const [selectedModel, setSelectedModel] = useState<string | null>(null)
 
   // A key can be used to force a re-render of the IngestionForm to refetch contexts
   const [ingestionKey, setIngestionKey] = useState(0)
@@ -54,11 +56,17 @@ function App() {
                 onContextChange={setSelectedContext}
               />
             </div>
+            <div className="backdrop-blur-lg bg-white/10 rounded-2xl shadow-2xl border border-white/20 hover:shadow-green-500/20 transition-all duration-300">
+              <ModelSelector
+                selectedModel={selectedModel}
+                onModelChange={setSelectedModel}
+              />
+            </div>
           </div>
 
           <div className="lg:col-span-3 animate-slide-in-right">
             <div className="backdrop-blur-lg bg-white/10 rounded-2xl shadow-2xl border border-white/20 hover:shadow-indigo-500/20 transition-all duration-300">
-              <Chat selectedContext={selectedContext} />
+              <Chat selectedContext={selectedContext} selectedModel={selectedModel} />
             </div>
           </div>
         </main>

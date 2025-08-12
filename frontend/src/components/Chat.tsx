@@ -16,9 +16,10 @@ interface Message {
 
 interface ChatProps {
   selectedContext: string | null;
+  selectedModel: string | null;
 }
 
-export function Chat({ selectedContext }: ChatProps) {
+export function Chat({ selectedContext, selectedModel }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -69,6 +70,7 @@ export function Chat({ selectedContext }: ChatProps) {
         body: JSON.stringify({
           query: userMessage.content,
           context_url: selectedContext,
+          model: selectedModel || "gpt-oss:20b",  // Use selected model or default
           messages: messages  // Send conversation history
         }),
       })
