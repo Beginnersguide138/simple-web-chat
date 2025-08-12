@@ -7,6 +7,7 @@ import json
 from app.services.llm_service import OllamaService, get_ollama_service
 from app.services.vector_db_service import MilvusService, get_milvus_service
 from app.services.langgraph_service import get_intelligent_rag_service
+from app.core.config import settings
 import logging
 
 router = APIRouter()
@@ -21,6 +22,7 @@ class ChatRequest(BaseModel):
     query: str
     context_url: str
     messages: List[Message] = []  # Conversation history
+    model: str = "gpt-oss:20b"  # Selected model
     top_k: int = 3
 
 class Source(BaseModel):
@@ -47,8 +49,9 @@ def chat_with_rag(request: ChatRequest):
         # Convert messages to dict format for the service
         conversation_history = [{"role": msg.role, "content": msg.content} for msg in request.messages]
         
-        # Use intelligent RAG service with LangGraph
+        # Use intelligent RAG service with LangGraph (temporarily using old service)
         intelligent_rag = get_intelligent_rag_service()
+        
         result = intelligent_rag.process_query(
             query=request.query,
             context_url=request.context_url,
@@ -84,7 +87,7 @@ def chat_with_rag_stream(request: ChatRequest):
             # Convert messages to dict format for the service
             conversation_history = [{"role": msg.role, "content": msg.content} for msg in request.messages]
             
-            # Use intelligent RAG service with streaming
+            # Use intelligent RAG service with streaming (temporarily using old service)
             intelligent_rag = get_intelligent_rag_service()
             
             # Stream the response from intelligent RAG service

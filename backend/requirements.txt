@@ -11,3 +11,6 @@ pytest-asyncio
 httpx
 langgraph
 langchain-core
+openai
+anthropic
+google-generativeai
